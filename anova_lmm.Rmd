@@ -1,0 +1,109 @@
+---
+title: "Stop using Repeated Measures ANOVA (working title)"
+author: "Maya Mathur & Mike Frank"
+date: "8/11/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(lme4) 
+library(lmerTest)
+library(tidyverse)
+library(ez)
+library(brms)
+```
+
+Broad outline
+1. RM-ANOVA is the same as but generally worse than LMM
+2. Simulations show this 
+3. LMM is not a panacea, there are some other possibilities, inc. GEE and BLMM
+
+# Intro
+
+
+
+
+
+
+Pro of other methods:
+
+Con of LMM:
+- a little more complicated
+- convergence problems
+
+We won't even get into generalized lm
+
+# Theory 
+
+Here are the assumptions of RM-ANOVA
+
+You can relax these in LMM, or GEE, or Bayes LMM
+
+No one of these alternatives is a panacea.
+
+Table: pros vs. conts
+
+
+# Practical issues of RM-ANOVA: Simulations
+
+## Data
+
+1. simulate from models
+2. mental abacus - longitudinal 
+3. another applied dataset
+
+
+## Issue #1: Power/nominal alpha
+
+
+## Issue: Missing data
+
+## Issue: Distributional assumptions/specification flexibility
+
+
+
+Binning/median splits are bad 
+
+
+## Issue: Pre-aggregation
+
+
+
+
+
+## Mental abacus example
+
+```{r}
+ma <- read_csv("data/zenith.csv") 
+```
+
+
+```{r}
+lmer_mod <- lmer(arith ~ condition * year + (year | subnum), 
+                 data = ma)
+summary(lmer_mod)
+lmm_coef <- coef(lmer_mod)
+```
+
+
+```{r}
+aov_mod <- aov(arith ~ condition * year + Error(subnum / year), data = ma)
+summary(aov_mod)
+# rm_coef(coef(aov_mod))
+```
+
+```{r}
+blmer_mod <- brm(arith ~ condition * year + (year | subnum), 
+                 data = ma, family = "gaussian")
+
+summary(blmer_mod)
+
+```
+
+
+# Simulations
+
+* basic power on the same dataset 
+* missing data
+* pre-aggregation
+* 
