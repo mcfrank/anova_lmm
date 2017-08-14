@@ -1,28 +1,52 @@
 ---
-title: "Stop using Repeated Measures ANOVA (working title)"
+title: "Stop Using Repeated Measures ANOVA (working title)"
 author: "Maya Mathur & Mike Frank"
-date: "8/11/2017"
-output: html_document
+
+header-includes:
+- \usepackage[T1]{fontenc}
+- \usepackage{microtype}
+- \usepackage[margin=1in]{geometry}
+- \usepackage{fancyhdr}
+- \usepackage{fancyhdr}
+- \pagestyle{fancy}
+- \fancyhead{}
+- \fancyfoot{}
+- \fancyhead[C]{Stop It}
+- \fancyfoot[RO,LE]{\thepage}
+- \usepackage{titlesec}
+- \usepackage{lettrine}
+- \usepackage{paralist}
+- \usepackage{setspace}\doublespacing
+- \usepackage{natbib}
+- \usepackage{url}
+- \usepackage{parskip}
+output:
+  pdf_document:
+    citation_package: natbib
+  word_document: default
+bibliography: refs.bib
 ---
 
 ```{r setup, include=FALSE}
 library(lme4) 
 library(lmerTest)
 library(tidyverse)
-library(ez)
-library(brms)
+#library(brms)
+#library(ez)
 ```
 
-Broad outline
-1. RM-ANOVA is the same as but generally worse than LMM
-2. Simulations show this 
-3. LMM is not a panacea, there are some other possibilities, inc. GEE and BLMM
+
+
+# Broad Outline
+
+\begin{enumerate}
+\item RM-ANOVA is the same as but generally worse than LMM
+\item Simulations show this
+\item LMM is not a panacea, there are some other possibilities, inc. GEE and BLMM
+\end{enumerate}
+
 
 # Intro
-
-
-
-
 
 
 Pro of other methods:
@@ -33,15 +57,33 @@ Con of LMM:
 
 We won't even get into generalized lm
 
+
 # Theory 
 
-Here are the assumptions of RM-ANOVA
+\begin{enumerate}
+\item Here are the assumptions of RM-ANOVA. It's a special case of LMM under the following restrictions. 
+\item You can relax these in LMM, or GEE, or Bayes LMM.
+\item Simulations show this
+\item LMM is not a panacea. There are some other possibilities, inc. GEE and BLMM
+\item Each of these alternatives has pros and cons, and they address slightly different questions. 
+\end{enumerate}
 
-You can relax these in LMM, or GEE, or Bayes LMM
 
-No one of these alternatives is a panacea.
 
-Table: pros vs. conts
+\subsection{Table: pros vs. cons}
+
+
+\begin{enumerate}
+\item When estimation of random intercepts/slopes themselves or of their variance is of interest (e.g., when they represent specific stimuli), LMM makes sense  
+\item When these are treated as nuisance parameters (e.g., specific subjects), consider GEE
+\item LMM has strong parametric assumptions, unlike OLS and its direct extension, GEE. In practice, it is usually fairly robust.
+\item Some of LMM's best properties (e.g., straightforward handling of missing data) are only achieved at the direct cost of above parametric assumptions. 
+\item Brief mention of conditional/marginal interpretation problem with non-ID link function
+\item Bayesian methods make most sense when requiring arbitrary flexibility (pretty sure Gelman text has good examples). (Con: as far as I know, mainstream Bayesian methods are going to be fully parametric as well.)
+\item Reiterate that any theoretical weakness of LMM is a weakness of RANOVA as well because latter is a special case. Computationally, when specification is equivalent, maybe RANOVA is useful for closed-form p-values and convergence? 
+\end{enumerate}
+
+
 
 
 # Practical issues of RM-ANOVA: Simulations
@@ -53,21 +95,39 @@ Table: pros vs. conts
 3. another applied dataset
 
 
-## Issue #1: Power/nominal alpha
+## Issue: Power/nominal alpha
+
+* Under $H_A$, RANOVA might be less powerful?
+
+* Under $H_0$, we should see nominal performance for both. 
+
 
 
 ## Issue: Missing data
 
+* If LMM's distributional assumptions hold, then it automatically handles MAR missing data unbiasedly because it can just maximize the likelihood anyway. 
+
+* RANOVA uses closed-form sums of squares, so presumably mainstream software will do complete-cases. Point to existing missing data literature for why this is usually horrible. 
+
+* Simulation: Fit equivalent RANOVA and LMM specifications to MAR missing data; RANOVA will be biased and inefficient. 
+
+
 ## Issue: Distributional assumptions/specification flexibility
 
+* RANOVA requires categorical covariates
 
+* When truly continuous covariates are dichotomized, this is not great\citep{bennette}
 
-Binning/median splits are bad 
+* Probably does not require simulation. 
 
 
 ## Issue: Pre-aggregation
 
+* Does not lead to the same model specification! Leads to different distributional assumptions. 
 
+* E.g., if there is correlation within both subjects and items, and you fit the model to subject means rather than observations, then you are assuming normality on the item intercepts but not on the subjects. 
+
+* Simulation: Generate data with large number of observations/subject and relatively few subjects. Pre-aggregated should lose power. 
 
 
 
@@ -93,10 +153,10 @@ summary(aov_mod)
 ```
 
 ```{r}
-blmer_mod <- brm(arith ~ condition * year + (year | subnum), 
-                 data = ma, family = "gaussian")
-
-summary(blmer_mod)
+# blmer_mod <- brm(arith ~ condition * year + (year | subnum), 
+#                  data = ma, family = "gaussian")
+# 
+# summary(blmer_mod)
 
 ```
 
@@ -106,4 +166,3 @@ summary(blmer_mod)
 * basic power on the same dataset 
 * missing data
 * pre-aggregation
-* 
