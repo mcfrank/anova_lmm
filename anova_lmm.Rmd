@@ -80,7 +80,7 @@ We won't even get into generalized lm
 \item Some of LMM's best properties (e.g., straightforward handling of missing data) are only achieved at the direct cost of above parametric assumptions. 
 \item Brief mention of conditional/marginal interpretation problem with non-ID link function
 \item Bayesian methods make most sense when requiring arbitrary flexibility (pretty sure Gelman text has good examples). (Con: as far as I know, mainstream Bayesian methods are going to be fully parametric as well.)
-\item Reiterate that any theoretical weakness of LMM is a weakness of RANOVA as well because latter is a special case. Computationally, when specification is equivalent, maybe RANOVA is useful for closed-form p-values and convergence? 
+\item Reiterate that any theoretical weakness of LMM is a weakness of RANOVA as well because latter is a special case. Computationally, when specification is equivalent, maybe RANOVA is useful for closed-form p-values and convergence? (Try simulating a challenging dataset, e.g., a lot of parameters, to see if we can get convergence failure for LMM in a specification that can be handled in closed form via RANOVA.)
 \end{enumerate}
 
 
@@ -93,6 +93,34 @@ We won't even get into generalized lm
 1. simulate from models
 2. mental abacus - longitudinal 
 3. another applied dataset
+
+
+## Issue: Main effects have ridiculous interpretation when there is an interaction
+
+```{r}
+# simulate RCT with 2 binary covariates with no main effects
+x1 = rbinom( n = 5000, prob = 0.5, size = 1 )
+x2 = rbinom( n = 5000, prob = 0.5, size = 1 )
+
+# but there is an interaction
+y = rnorm( n = 5000, mean = 10 * x1 * x2, sd = 5)
+
+fake = data.frame( x1, x2, y )
+
+# all means are 0 except when both variables are 1, as expected
+aggregate( y ~ x1 + x2, data = fake, FUN = mean )
+
+# ANOVA says there are main effects! 
+summary( aov( y ~ x1 * x2, data = fake ) )
+
+# but LM more sensibly says there aren't
+summary( lm( y ~ x1 * x2, data = fake ) )
+
+# this one exactly matches - changes conditioning in the SS partitions
+# https://stats.stackexchange.com/questions/20002/regression-vs-anova-discrepancy-aov-vs-lm-in-r
+library(car)
+Anova( aov( y ~ x1 * x2, data = fake ), type=1 )
+```
 
 
 ## Issue: Power/nominal alpha
